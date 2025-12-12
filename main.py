@@ -69,11 +69,11 @@ async def calculate_simulation(params: SimParams):
         "data": T.tolist()    # Eje Y
     })
 
-@app.get("/exposition", response_class=HTMLResponse)
-async def exposition(request: Request):
-    return templates.TemplateResponse("exposition.html", {
+@app.get("/exposure", response_class=HTMLResponse)
+async def exposure(request: Request):
+    return templates.TemplateResponse("exposure.html", {
         "request": request,
-        "pagina_actual": "exposition"
+        "pagina_actual": "exposure"
     })
 
 
