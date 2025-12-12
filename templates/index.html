@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="hero-text-content"> 
+            <h1>
+                <span class="text-up">CUANDO LA INGENIERIA Y LAS</span>
+                <span class="text-mid">MATEMÁTICAS SE UNEN HACEN COSAS</span>
+                <span class="text-down">GRANDES</span>
+            </h1>
+            <div class="cta-container">
+                <a href="{{url_for('simulation')}}" class="btn-go">IR A LA SIMULACIÓN</a>
+            </div>
+    </div>
+        <div class="hero-image-content">
+            <img src="/static/img/people.png" alt="Estudiantes">
+        
+        </div>
+</section>
+{% endblock %}

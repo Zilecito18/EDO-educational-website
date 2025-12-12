@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-header">
+            <img src="/static/img/untels.png" alt="Logo Untels">
+        </div>
+
+        <div class="hamburger">
+            <i class='bx bx-menu'></i>
+        </div>
+
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="/" class="nav-link">Inicio</a></li>
+                <li><a href="{{url_for('simulation')}}" class="nav-link">Simulación</a></li>
+                <li><a href="{{url_for('exposition')}}" class="nav-link">Exposición</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            /* --- LÓGICA 1: MARCAR LINK ACTIVO --- */
+            const currentLocation = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            navLinks.forEach(link => {
+                if(link.getAttribute('href') === currentLocation){
+                    link.classList.add('activo');
+                }
+                // EXTRA: Si hacen clic en un enlace en móvil, cerramos el menú
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('show');
+                });
+            });
+
+            /* --- LÓGICA 2: MENÚ HAMBURGUESA --- */
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+
+            if(hamburger && navMenu){
+                hamburger.addEventListener('click', () => {
+                    // Alternar la clase 'show' para mostrar/ocultar menú
+                    navMenu.classList.toggle('show');
+                    
+                    // Opcional: Cambiar el ícono de hamburguesa a una 'X'
+                    const icon = hamburger.querySelector('i');
+                    if(navMenu.classList.contains('show')){
+                        icon.classList.replace('bx-menu', 'bx-x');
+                    } else {
+                        icon.classList.replace('bx-x', 'bx-menu');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

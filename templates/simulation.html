@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Simulación{% endblock %}
+
+{% block content %}
+<section class="simulation-wrapper">
+    <div class="sim-card">
+        
+        <div class="sim-sidebar" id="sidebar">
+            
+            <div class="sidebar-header" id="btn-toggle-menu">
+                <i class='bx bx-menu'></i>
+            </div>
+
+            <div class="flip-wrapper"> <div class="flip-container">
+                    <div class="flipper">
+                        
+                        <div class="face front">
+                            <form class="sim-form" onsubmit="return false;">
+                                <div class="control-group">
+                                    <div class="label-row">
+                                        <label>Temperatura T(0):</label> <span class="val-display">40</span>
+                                    </div>
+                                    <input type="range" id="slider-t0" min="0" max="100" value="40" class="custom-slider">
+                                </div>
+                                <div class="control-group">
+                                    <div class="label-row">
+                                        <label>Ganancia K:</label> <span class="val-display">5</span>
+                                    </div>
+                                    <input type="range" id="slider-k" min="0" max="10" value="5" class="custom-slider">
+                                </div>
+                                <div class="control-group">
+                                    <div class="label-row">
+                                        <label>Constante T:</label> <span class="val-display">10</span>
+                                    </div>
+                                    <input type="range" id="slider-tau" min="1" max="50" value="10" class="custom-slider">
+                                </div>
+                                <div class="control-group">
+                                    <div class="label-row">
+                                        <label>Potencia U:</label> <span class="val-display">20</span>
+                                    </div>
+                                    <input type="range" id="slider-u" min="0" max="100" value="20" class="custom-slider">
+                                </div>
+                                <div class="control-group">
+                                    <div class="label-row">
+                                        <label>Puntos:</label> <span class="val-display">100</span>
+                                    </div>
+                                    <input type="range" id="slider-pts" min="10" max="200" value="100" class="custom-slider">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="face back">
+                            <div class="back-content">
+                                <h3>Instrucciones</h3>
+                                <p>Configura los parámetros:</p>
+                                <ul>
+                                    <li><strong>T(0):</strong> Temp. Inicial.</li>
+                                    <li><strong>K:</strong> Ganancia del sistema.</li>
+                                    <li><strong>Tau:</strong> Velocidad de reacción.</li>
+                                    <li><strong>U:</strong> Entrada de energía.</li>
+                                </ul>
+                                <div class="info-footer">
+                                    <p>La gráfica se actualiza automáticamente.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-controls">
+                <div class="toggle-container">
+                    <div class="toggle-switch active" id="btn-view-controls" title="Ver Controles"></div> 
+                    <div class="toggle-switch" id="btn-view-instructions" title="Ver Instrucciones"></div> 
+                </div>
+            </div>
+
+        </div>
+
+        <div class="sim-content">
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // --- LÓGICA DE GRÁFICA (Igual que antes) ---
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [{ label: 'T(t)', data: [], borderColor: '#1F509A', borderWidth: 3, pointRadius: 0, tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 }, scales: { x: { grid: {display:false} }, y: { suggestedMin: 0, suggestedMax: 60 } } }
+    });
+
+    async function updateGraph() {
+        // (Tu lógica de fetch aquí...)
+        const params = {
+            T0: parseFloat(document.getElementById('slider-t0').value),
+            K: parseFloat(document.getElementById('slider-k').value),
+            tau: parseFloat(document.getElementById('slider-tau').value),
+            u: parseFloat(document.getElementById('slider-u').value),
+            num_points: parseInt(document.getElementById('slider-pts').value),
+            t_final: 20.0 
+        };
+        try {
+            const response = await fetch('/api/calculate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(params) });
+            const result = await response.json();
+            myChart.data.labels = result.labels.map(t => t.toFixed(1));
+            myChart.data.datasets[0].data = result.data;
+            myChart.update();
+        } catch(e) { console.error(e); }
+    }
+
+    document.querySelectorAll('.custom-slider').forEach(input => {
+        input.addEventListener('input', function() {
+            this.previousElementSibling.querySelector('.val-display').textContent = this.value;
+            updateGraph();
+        });
+    });
+    updateGraph();
+
+    // --- NUEVA LÓGICA DE BOTONES SELECTORES ---
+    
+    const btnControls = document.getElementById('btn-view-controls');     // Círculo 1
+    const btnInstructions = document.getElementById('btn-view-instructions'); // Círculo 2
+    const flipper = document.querySelector('.flipper');
+
+    // 1. Click en Círculo 1 (Ver Controles)
+    btnControls.addEventListener('click', () => {
+        flipper.classList.remove('flipped'); // Quita el giro (vuelve al frente)
+        
+        // Actualizar visual de los botones
+        btnControls.classList.add('active');
+        btnInstructions.classList.remove('active');
+    });
+
+    // 2. Click en Círculo 2 (Ver Instrucciones)
+    btnInstructions.addEventListener('click', () => {
+        flipper.classList.add('flipped'); // Aplica el giro (va atrás)
+        
+        // Actualizar visual de los botones
+        btnControls.classList.remove('active');
+        btnInstructions.classList.add('active');
+    });
+
+    // --- MENU HAMBURGUESA ---
+    const btnMenu = document.getElementById('btn-toggle-menu');
+    const sidebar = document.getElementById('sidebar');
+    
+    btnMenu.addEventListener('click', () => {
+        sidebar.classList.toggle('closed');
+        setTimeout(() => { if(Chart.getChart("myChart")) Chart.getChart("myChart").resize(); }, 500);
+    });
+});
+</script>
+{% endblock %}
